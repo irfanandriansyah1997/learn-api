@@ -1,8 +1,7 @@
+//nolint:typecheck // disable lint since PanicIfError still on same package
 package utils
 
-import (
-	"database/sql"
-)
+import "database/sql"
 
 func CommitOrRollback(tx *sql.Tx) {
 	err := recover()
