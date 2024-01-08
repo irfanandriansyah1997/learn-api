@@ -6,15 +6,15 @@ type Category struct {
 }
 
 type CategoryCreateArgs struct {
-	Name string
+	Name string `validate:"required,max=200,min=5" json:"name"`
 }
 
 type CategoryUpdateArgs struct {
-	ID   int
-	Name string
+	ID   int    `validate:"required"`
+	Name string `validate:"required,max=200,min=5" json:"name"`
 }
 
 type CategoryResponse struct {
-	ID   int
-	Name string
+	ID   int    `json:"id"`
+	Name string `json:"name"`
 }
