@@ -1,17 +1,28 @@
-package category
+//nolint:typecheck // disable lint since CategoryUsecase still on same package
+package usecase
 
 import (
 	"context"
 	"database/sql"
 
+	"github.com/go-playground/validator/v10"
 	"github.com/irfanandriansyah1997/learn-api/internal/model"
 	"github.com/irfanandriansyah1997/learn-api/internal/repository"
 	"github.com/irfanandriansyah1997/learn-api/internal/utils"
 )
 
 type CategoryUsecaseImpl struct {
-	repo repository.CategoryRepository
-	DB   *sql.DB
+	repo     repository.CategoryRepository
+	DB       *sql.DB
+	validate *validator.Validate
+}
+
+func NewCategoryUsecase(repo repository.CategoryRepository, db *sql.DB, validate *validator.Validate) CategoryUsecase {
+	return &CategoryUsecaseImpl{
+		repo:     repo,
+		DB:       db,
+		validate: validate,
+	}
 }
 
 func adapterCategoryResponse(category model.Category) model.CategoryResponse {
@@ -19,7 +30,7 @@ func adapterCategoryResponse(category model.Category) model.CategoryResponse {
 }
 
 func adapterCategoryResponses(categories []model.Category) []model.CategoryResponse {
-	var categoryResponses []model.CategoryResponse
+	categoryResponses := []model.CategoryResponse{}
 
 	for _, category := range categories {
 		categoryResponses = append(categoryResponses, adapterCategoryResponse(category))
@@ -29,6 +40,9 @@ func adapterCategoryResponses(categories []model.Category) []model.CategoryRespo
 }
 
 func (usecase *CategoryUsecaseImpl) Create(ctx context.Context, args model.CategoryCreateArgs) model.CategoryResponse {
+	err := usecase.validate.Struct(args)
+	utils.PanicIfError(err)
+
 	tx, err := usecase.DB.Begin()
 	utils.PanicIfError(err)
 
@@ -43,13 +57,16 @@ func (usecase *CategoryUsecaseImpl) Create(ctx context.Context, args model.Categ
 }
 
 func (usecase *CategoryUsecaseImpl) Update(ctx context.Context, args model.CategoryUpdateArgs) model.CategoryResponse {
+	err := usecase.validate.Struct(args)
+	utils.PanicIfError(err)
+
 	tx, err := usecase.DB.Begin()
 	utils.PanicIfError(err)
 
 	defer utils.CommitOrRollback(tx)
 
 	category, err := usecase.repo.FindByID(ctx, tx, args.ID)
-	utils.PanicIfError(err)
+	utils.PanicIfNotFoundError(err)
 
 	category.Name = args.Name
 	result := usecase.repo.Update(ctx, tx, category)
@@ -64,7 +81,7 @@ func (usecase *CategoryUsecaseImpl) Delete(ctx context.Context, categoryID int) 
 	defer utils.CommitOrRollback(tx)
 
 	category, err := usecase.repo.FindByID(ctx, tx, categoryID)
-	utils.PanicIfError(err)
+	utils.PanicIfNotFoundError(err)
 
 	usecase.repo.Delete(ctx, tx, category)
 }
@@ -74,7 +91,7 @@ func (usecase *CategoryUsecaseImpl) FindByID(ctx context.Context, categoryID int
 	utils.PanicIfError(err)
 
 	category, err := usecase.repo.FindByID(ctx, tx, categoryID)
-	utils.PanicIfError(err)
+	utils.PanicIfNotFoundError(err)
 
 	return adapterCategoryResponse(category)
 }

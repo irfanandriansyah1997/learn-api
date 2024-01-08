@@ -17,3 +17,8 @@ services:
             MYSQL_PASSWORD: ${MYSQL_PASSWORD}
         ports:
             - '3306:3306'
+        volumes:
+          - ./temp-docker-volume:/var/lib/mysql
+
+volumes:
+  docker-compose-volume:

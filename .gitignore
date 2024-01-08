@@ -153,3 +153,7 @@ tags
 .ionide
 
 # End of https://www.toptal.com/developers/gitignore/api/go,goland+all,visualstudiocode,vim
+
+# docker compose volume
+temp-docker-volume
+main

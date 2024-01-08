@@ -1,3 +1,4 @@
+//nolint:typecheck // disable lint since CategoryRepository still on same package
 package repository
 
 import (
@@ -12,8 +13,12 @@ import (
 type CategoryRepositoryImpl struct {
 }
 
+func NewCatetegoryRepository() CategoryRepository {
+	return &CategoryRepositoryImpl{}
+}
+
 func (repository *CategoryRepositoryImpl) Save(ctx context.Context, tx *sql.Tx, category model.Category) model.Category {
-	SQL := "INSERT INTO customer(name) VALUE (?)"
+	SQL := "INSERT INTO category(name) VALUE (?)"
 
 	result, err := tx.ExecContext(ctx, SQL, category.Name)
 	utils.PanicIfError(err)
@@ -44,6 +49,7 @@ func (repository *CategoryRepositoryImpl) FindByID(ctx context.Context, tx *sql.
 	SQL := "SELECT id, name FROM category WHERE id = ?"
 	rows, err := tx.QueryContext(ctx, SQL, categoryID)
 	utils.PanicIfError(err)
+	defer rows.Close()
 
 	category := model.Category{}
 	if rows.Next() {
@@ -61,6 +67,7 @@ func (repository *CategoryRepositoryImpl) FindAll(ctx context.Context, tx *sql.T
 	SQL := "SELECT id, name FROM category"
 	rows, err := tx.QueryContext(ctx, SQL)
 	utils.PanicIfError(err)
+	defer rows.Close()
 
 	var categories []model.Category
 	for rows.Next() {

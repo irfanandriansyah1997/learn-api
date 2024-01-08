@@ -1,4 +1,4 @@
-package category
+package usecase
 
 import (
 	"context"
